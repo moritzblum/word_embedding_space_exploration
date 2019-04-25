@@ -24,6 +24,7 @@ class DataGenerator(keras.utils.Sequence):
         self.on_epoch_end()
 
         # set up the encoder with all the possible chars
+        self.eosTag = '#'  # because it is not contained in the corpus
         self.enc = OneHotEncoder(handle_unknown='ignore')
         self.word_length = 0
         i = 0
@@ -38,10 +39,10 @@ class DataGenerator(keras.utils.Sequence):
                 for c in word:
                     if [c] not in chars:
                         chars.append([c])
+        chars.append([self.eosTag])
         self.hot_enc_len = len(chars)
         self.enc.fit(chars)
         self.word_length += 10  # add additional padding
-        self.eosTag = '#'  # because it is not contained in the corpus
 
     def on_epoch_end(self):
         """Updates indexes after each epoch. Implements the shuffle functionality."""
@@ -65,10 +66,7 @@ class DataGenerator(keras.utils.Sequence):
             # Store sample
             X[i, ] = self.labels[word]
             # Store class
-            char_list = np.expand_dims(list(word + self.eosTag), axis=1)
-            char_hot_enc = self.enc.transform(char_list).toarray()
-            pad = np.zeros((self.word_length - len(char_hot_enc), self.hot_enc_len))
-            char_hot_enc_pad = np.concatenate((char_hot_enc, pad))
+            char_hot_enc_pad = self.word_2_seq_hot_enc_sample(word)
             Y[i] = char_hot_enc_pad
         return X.reshape(self.batch_size, self.dim), Y
 
@@ -89,15 +87,33 @@ class DataGenerator(keras.utils.Sequence):
 
         return X, Y
 
+    def word_2_seq_hot_enc_sample(self, word):
+        char_list = np.expand_dims(list(word + self.eosTag), axis=1)
+        char_hot_enc = self.enc.transform(char_list).toarray()
+        pad = np.zeros((self.word_length - len(char_hot_enc), self.hot_enc_len))
+        char_hot_enc_pad = np.concatenate((char_hot_enc, pad))
+        return char_hot_enc_pad
+
+    def word_2_seq_hot_enc(self, word_batch):
+        batch_encodings = []
+        for word in word_batch:
+            batch_encodings.append(self.word_2_seq_hot_enc_sample(word))
+        return batch_encodings
+
     def seq_hot_enc_2_word(self, seq_hot_enc_batch):
         """Invert the hot encoding for a batch of sequences containing these hot enc vectors."""
         words = []
         for seq in seq_hot_enc_batch:
-            word = self.enc.inverse_transform(seq)
+            word = self.enc.inverse_transform(seq)  # chooses the entry with the largest value, in the case that two
+            # entries habe the same value, it chooses the fist entry
             word = word.reshape(self.word_length)
             word_string = ''
             for char in word:
-                word_string = word_string + char
+                if char is not None:
+                    word_string = word_string + char
+                else:
+                    word_string = word_string + '0'
             words.append(word_string)
         return words
+
 
