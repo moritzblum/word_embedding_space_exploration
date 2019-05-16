@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import keras
 from sklearn.preprocessing import OneHotEncoder
@@ -30,8 +32,6 @@ class DataGenerator(keras.utils.Sequence):
         i = 0
         chars = []
         for word in labels.index2word:
-            if len(word) > self.word_length:
-                self.word_length = len(word)
             i += 1
             if i == 900:  # the first 900 word should contain all possible chars
                 break
@@ -42,7 +42,7 @@ class DataGenerator(keras.utils.Sequence):
         chars.append([self.eosTag])
         self.hot_enc_len = len(chars)
         self.enc.fit(chars)
-        self.word_length += 10  # add additional padding
+        self.word_length = 80
 
     def on_epoch_end(self):
         """Updates indexes after each epoch. Implements the shuffle functionality."""
@@ -75,13 +75,14 @@ class DataGenerator(keras.utils.Sequence):
         return int(np.floor(len(self.list_IDs) / self.batch_size))
 
     def __getitem__(self, index):
+        start = time.time()
         """Generate one batch of data"""
         # Generate indexes of the batch
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
 
         # Find list of IDs
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
-
+        print(time.time() - start)
         # Generate data
         X, Y = self.__data_generation(list_IDs_temp)
 
@@ -105,7 +106,7 @@ class DataGenerator(keras.utils.Sequence):
         words = []
         for seq in seq_hot_enc_batch:
             word = self.enc.inverse_transform(seq)  # chooses the entry with the largest value, in the case that two
-            # entries habe the same value, it chooses the fist entry
+            # entries have the same value, it chooses the fist entry
             word = word.reshape(self.word_length)
             word_string = ''
             for char in word:
