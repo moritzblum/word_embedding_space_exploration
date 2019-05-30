@@ -14,8 +14,7 @@ from gensim.models import KeyedVectors
 
 
 from data_generator import DataGenerator
-from networks import get_LSTM_v1
-
+from networks import *
 
 MORPHOLOGICAL_DERIVATIONS = 'morphological_derivations'
 COMPOUNDS = 'compounds'
@@ -34,11 +33,13 @@ MODEL_PATH = '../data/embedding_models/'
 word2vec = 'GoogleNews-vectors-negative300.bin'
 glove = 'glove.6B/glove.6B.50d.word2vec'
 
+validation = COMPOUNDS # MORPHOLOGICAL_DERIVATIONS  #
 train_test_split = 0.5
-batch_size = 1000  # max size of the training set
-n_epochs = 1000
-cpu_cores = 12 # multiprocessing.cpu_count()
+batch_size = 4000  # max size of the training set
+n_epochs = 4000
+cpu_cores = 8
 embedding_model_to_use = 'glove'
+
 
 """-------Training Configuration-------"""
 
@@ -46,7 +47,7 @@ embedding_model_to_use = 'glove'
 STARS = '**********'
 np.set_printoptions(threshold=sys.maxsize)
 date = datetime.datetime.now()
-
+size_validation_set = 1
 
 def data_generator_test():
     print('Data Generator check:')
@@ -78,7 +79,17 @@ def get_partition(embedding_model, style, percent):
             compounds = json.load(input)[embedding_model_to_use]
             shuffle(compounds)  # shuffle to get random subset in the next step
             validation_tokens_list = compounds[math.ceil((1-percent)*len(compounds)):]
-
+            while True:
+                if len(validation_tokens_list) < batch_size:
+                    print('validation_tokens_list smaller than one batch -> extend size by adding some of them '
+                          'multiple times. Size validation: '
+                          + str(len(validation_tokens_list))
+                          + 'Size of batch: ' + str(batch_size))
+                    validation_tokens_list = np.concatenate((validation_tokens_list,
+                                                             validation_tokens_list[:batch_size - len(validation_tokens_list)]))
+                else:
+                    break
+            print('New validation set size: ' + str(len(validation_tokens_list)))
     elif style == MORPHOLOGICAL_DERIVATIONS:
         with open('../data/morphological_derivations_separated.json') as input:
             derivations = json.load(input)
@@ -92,7 +103,8 @@ def get_partition(embedding_model, style, percent):
 
             shuffle(validation_tokens_list)
             validation_tokens_list = validation_tokens_list[math.ceil((1 - percent) * len(validation_tokens_list)):]
-
+    size_validation_set = len(validation_tokens_list)
+    print('Size of the validation set: ' + str(size_validation_set))
     # create a list of the ids corresponding to the words to exclude
     validation_id_list = []
     for validation_token in validation_tokens_list:
@@ -105,7 +117,6 @@ def get_partition(embedding_model, style, percent):
         train_id_list = np.delete(train_id_list, index_of_id)
 
     return {'train': train_id_list, 'validation': validation_id_list}
-
 
 
 # load the model
@@ -123,7 +134,7 @@ print('Vectors in the embedding model: ' + str(model_size))
 model_name = embedding_model_to_use + '-v1_model_size=' + str(model_size) + '_epochs=' + str(n_epochs) + '_' + date.strftime("%Y-%m-%d %H:%M")
 print('Corresponding files and models are stored under the name: ' + model_name)
 
-partition = get_partition(embedding_model, MORPHOLOGICAL_DERIVATIONS, train_test_split)
+partition = get_partition(embedding_model, validation, train_test_split)
 
 for id in partition['validation']:
     if id in partition['train']:
@@ -139,9 +150,8 @@ validation_generator = DataGenerator(partition['validation'], embedding_model, *
 
 input_dim = training_generator.dim  # calculated by the DataGenerator init
 hot_enc_dim = training_generator.hot_enc_len  # for the output
-seq_length = training_generator.word_length  # length of the longest word of a sample from the model
-# with some safety bias
-
+# length of the longest word of a sample from the model with some safety bias
+seq_length = training_generator.word_length  # default 80, can be adapted
 
 data_generator_test()
 oneHotEncoder_test(training_generator)
@@ -150,7 +160,7 @@ oneHotEncoder_test(training_generator)
 # Design the LSTM model architecture
 
 # create LSTM
-model = get_LSTM_v1(seq_length, input_dim, hot_enc_dim)
+model = get_LSTM_v2(seq_length, input_dim, hot_enc_dim)
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
@@ -158,11 +168,13 @@ plot_model(model, show_shapes=True, to_file='../data/network_models/architecture
 
 # model.load_weights(filepath)
 
+
 # train LSTM
 history = model.fit_generator(
     generator=training_generator,
     validation_data=validation_generator,
     epochs=n_epochs,
+    validation_steps=size_validation_set/batch_size,
     use_multiprocessing=True,
     workers=cpu_cores
 )
@@ -175,16 +187,24 @@ Y = embedding_model.index2word[0:200]
 X = embedding_model[Y]
 prediction = model.predict(X)
 words = training_generator.seq_hot_enc_2_word(prediction)
-print(Y)
-print(words)
+
+test_tuples = []
+index = 0
+for test_element in Y:
+    test_tuples.append((Y[index], words[index]))
+    index += 1
+print(test_tuples)
 
 # list all data in history
 print('history data:')
 print(history.history.keys())
 
 # summarize history for accuracy
-plt.plot(history.history['loss'])
-plt.plot(history.history['acc'])
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['acc'], label='acc')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.plot(history.history['val_acc'], label='val_acc')
+plt.legend()
 plt.title('loss/acc')
 plt.ylabel('loss/acc')
 plt.xlabel('epoch')

@@ -5,22 +5,18 @@
 ## Project Description
 
 ## References 
- * Main idea: Learn to Add Numbers with an Encoder-Decoder LSTM Recurrent Neural Network (https://machinelearningmastery.com/learn-add-numbers-seq2seq-recurrent-neural-networks/)
- * different LSTM types in Keras: https://stackoverflow.com/questions/43034960/many-to-one-and-many-to-many-lstm-examples-in-keras
- * Keras data generator Example: https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
- * Word2vec Keras Tutorial: https://www.tensorflow.org/tutorials/representation/word2vec
+ * Main idea: [Learn to Add Numbers with an Encoder-Decoder LSTM Recurrent Neural Network](https://machinelearningmastery.com/learn-add-numbers-seq2seq-recurrent-neural-networks/)
+ * [different LSTM types in Keras](https://stackoverflow.com/questions/43034960/many-to-one-and-many-to-many-lstm-examples-in-keras)
+ * [Keras data generator Example](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
+ * [Word2vec Keras Tutorial](https://www.tensorflow.org/tutorials/representation/word2vec)
  * Word2vec Paper: Distributed Representations of Words and Phrases and their Compositionality
- * Google translator seq2seq paper: Google’s Neural Machine Translation System: Bridging the Gap between Human and Machine Translation
+ * Google translator seq2seq paper: Google’s Neural Machine Translation System: Bridging the Gap between Human and 
+ Machine Translation
  
 
 
 ## Ideas and further plan
- * Which effect has the number of layers or the number of units in a LSTM network?
- * Estimate the size (layers, LSTM units) of the network based on similar NLP tasks.
- * How do design the validation/test set? Which words could be removed from the corpus without losing knowledge? 
- E.g. compound words, synsets, words on a line in the embedding space
  * How does the network behave (e.g. accuracy) in terms of: word length, nouns/verbs/adjectives
- * "NN have the days counted in all applications, because they require more resources to train and run than attention-based models." https://towardsdatascience.com/the-fall-of-rnn-lstm-2d1594c74ce0
  
  
  ## Infos
@@ -73,7 +69,8 @@
  Here are examples of English derivational patterns and their suffixes:
 
  * adjective-to-noun: -ness (slow → slowness)
- * adjective-to-verb: -ise (modern → modernise) in British English or -ize (final → finalize) in American English and Oxford spelling
+ * adjective-to-verb: -ise (modern → modernise) in British English or -ize (final → finalize) in American English and 
+ Oxford spelling
  * adjective-to-adjective: -ish (red → reddish)
  * adjective-to-adverb: -ly (personal → personally)
  * noun-to-adjective: -al (recreation → recreational)
@@ -87,20 +84,24 @@
  
  * A prefix (write → re-write; lord → over-lord) rarely changes the lexical category in English.
  * The prefix un- applies to adjectives (healthy → unhealthy) and some verbs (do → undo) but rarely to nouns.
- * A few exceptions are the derivational prefixes en- and be-. En- (replaced by em- before labials) is usually a transitive marker on verbs, but it can also be applied to adjectives and nouns to form transitive verbs: circle (verb) → encircle (verb) but rich (adj) → enrich (verb), large (adj) → enlarge (verb), rapture (noun) → enrapture (verb), slave (noun) → enslave (verb).
+ * A few exceptions are the derivational prefixes en- and be-. En- (replaced by em- before labials) is usually a 
+ transitive marker on verbs, but it can also be applied to adjectives and nouns to form transitive verbs: 
+ circle (verb) → encircle (verb) but rich (adj) → enrich (verb), large (adj) → enlarge (verb), 
+ rapture (noun) → enrapture (verb), slave (noun) → enslave (verb).
 
  Excluding some words which follow morphological derivations, would yield a test set that can be reconstructed, because
  the RNN can learn the semantic of the derivation rules.
 
 ### Multi-words
 
- Multi-words are very similar to Compounds, but the semantically couples words are separated by a whitespace. Using Milti-words as test-set
- would require first to train word embeddings, with Multi-words as one word/vector. After that, the idea is the same to the idea with Compounds.
+ Multi-words are very similar to Compounds, but the semantically couples words are separated by a whitespace. 
+ Using Milti-words as test-set would require first to train word embeddings, with Multi-words as one word/vector. 
+ After that, the idea is the same to the idea with Compounds.
  
  To train the word embeddings, a Multi-word tokenized text is required. NLTK provides a module 
  [nltk.tokenize.mwe module](http://www.nltk.org/api/nltk.tokenize.html?highlight=regexp%20tokenize#nltk.tokenize.regexp.RegexpTokenizer) 
- for that. The training can be done with [Gensim](https://radimrehurek.com/gensim/models/word2vec.html) to obtain a Word2Vec model. 
- (Glove embeddings can not be trained with Gensim.)
+ for that. The training can be done with [Gensim](https://radimrehurek.com/gensim/models/word2vec.html) to obtain a 
+ Word2Vec model. (Glove embeddings can not be trained with Gensim.)
  
  https://datascience.stackexchange.com/questions/17294/nlp-what-are-some-popular-packages-for-multi-word-tokenization
 
@@ -109,4 +110,85 @@
 https://stackoverflow.com/questions/5532363/python-tokenizing-with-phrases
 
 ### Redundant words in English
+
+Vocabularies that are not necessary in the english language, because e.g. there is another more frequently used word 
+with the same meaing 
+
+## Training
+
+Training is done on the CITEC GPU-Cluster.
+
+### Training 1
+
+"""-------Training Configuration-------"""
+validation = MORPHOLOGICAL_DERIVATIONS 
+train_test_split = 0.5
+batch_size = 4000  
+n_epochs = 5000
+cpu_cores = 12 
+embedding_model_to_use = 'glove'
+"""-------Training Configuration-------"""
+
+|Layer (type)                 |Output Shape              |Param    
+|-----------------------------|--------------------------|--------|
+|repeat_vector_1 (RepeatVecto |(None, 80, 50)            | 0      | 
+|lstm_1 (LSTM)                |(None, 80, 15)            | 3960   | 
+|lstm_2 (LSTM)                |(None, 80, 10)            | 1040   | 
+|dense_1 (Dense)              |(None, 80, 70)            | 770    | 
+|dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
+Total params: 9,746
+Trainable params: 9,746
+Non-trainable params: 0
+
+Size of the validation set: 8813
+
+Training results:
+* after 1000 epochs: loss: 0.2852 - acc: 0.0213 - val_loss: 0.3068 - val_acc: 0.0205
+* after 2000 epochs: loss: 0.2849 - acc: 0.0213 - val_loss: 0.3073 - val_acc: 0.0205
+* after 3000 epochs: loss: 0.2847 - acc: 0.0214 - val_loss: 0.3063 - val_acc: 0.0204
+* after 4000 epochs: loss: 0.2846 - acc: 0.0214 - val_loss: 0.3055 - val_acc: 0.0204
+*after 4502 epochs: loss: 0.2848 - acc: 0.0214 - val_loss: 0.3068 - val_acc: 0.0203
+
+GPU cluster didn't finish training, due to time limit of 48h training. But the results are enough to make first 
+reasoning. After 3000 epochs no improvement on training and validation loss. This is an indicator for a underfitting 
+RNN model. 
+
+
+### Training 2 
+
+This time the number of LSTM layers and the number of LSTMs per layer are increased, the training limit is extended to
+72 hours, and the number of epochs is reduced.
+
+"""-------Training Configuration-------"""
+validation = MORPHOLOGICAL_DERIVATIONS 
+train_test_split = 0.5
+batch_size = 4000  
+n_epochs = 4000
+cpu_cores = 8 
+embedding_model_to_use = 'glove'
+"""-------Training Configuration-------"""
+
+|Layer (type)                 |Output Shape              |Param    
+|-----------------------------|--------------------------|--------|
+|repeat_vector_1 (RepeatVecto |(None, 80, 50)            | 0      | 
+|lstm_1 (LSTM)                |(None, 80, 60)            | 26640  | 
+|lstm_2 (LSTM)                |(None, 80, 40)            | 16160  | 
+|lstm_3 (LSTM)                |(None, 80, 40)            | 12960  | 
+|dense_1 (Dense)              |(None, 80, 70)            | 2870   | 
+|dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
+Total params: 62,606
+Trainable params: 62,606
+Non-trainable params: 0
+
+Size of the validation set: 8813
+
+
+TODO stdout_2948_0 training history
+
+### Training 3
+
+Same configuration and network as in training 2 but with COMPOUNDS for validation. Due to the fact that the compounds 
+set has only a size of 400 and the batch size is 4000, the validation set is extended artificially by repeating the
+set multiple times.
+
 

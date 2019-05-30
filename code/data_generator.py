@@ -28,7 +28,6 @@ class DataGenerator(keras.utils.Sequence):
         # set up the encoder with all the possible chars
         self.eosTag = '#'  # because it is not contained in the corpus
         self.enc = OneHotEncoder(handle_unknown='ignore')
-        self.word_length = 0
         i = 0
         chars = []
         for word in labels.index2word:
@@ -75,14 +74,12 @@ class DataGenerator(keras.utils.Sequence):
         return int(np.floor(len(self.list_IDs) / self.batch_size))
 
     def __getitem__(self, index):
-        start = time.time()
         """Generate one batch of data"""
         # Generate indexes of the batch
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
 
         # Find list of IDs
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
-        print(time.time() - start)
         # Generate data
         X, Y = self.__data_generation(list_IDs_temp)
 
