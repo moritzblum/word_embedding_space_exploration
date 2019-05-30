@@ -1,8 +1,11 @@
 # Word Embedding Space Exploration with LSTMs
 
-## Overview
 
 ## Project Description
+
+The goal is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
+insights into the space of word embeddings e.g. in therms of word locations and could have multiple applications like
+e.g. understanding NN training results
 
 ## References 
  * Main idea: [Learn to Add Numbers with an Encoder-Decoder LSTM Recurrent Neural Network](https://machinelearningmastery.com/learn-add-numbers-seq2seq-recurrent-neural-networks/)
@@ -14,8 +17,8 @@
  Machine Translation
  
 
-
 ## Ideas and further plan
+ * What influence does the selection of the validation set have?
  * How does the network behave (e.g. accuracy) in terms of: word length, nouns/verbs/adjectives
  
  
@@ -25,16 +28,20 @@
  * "2 layers are nice, 5 layers are better and 7 layers are very hard to train"
  
  
- ## Motivation
- 
- Verbalization of points in the word embedding space, which were not trained. 
- 
- 
  ## Setup
+ 
+ To verbalize word embedding vectors, a function that maps high dimensional vectors to strings is required. Therefore a 
+ sequence-generation RNN (one-to-many) with LSTM cells is used. Input to the network are the raw word embedding vectors
+ and the output is a sequence of vectors, where each vector is a char in one-hot encoding. For training the Stanford Glove
+ and Google pre trained Word2Vec databases are used, which contain the training data in vector string tuples. 
+ During training, a DataGenerator generates a batch in the correct format out of tone of these corpora. Choosing a 
+ validation set is not easy, so this will be discussed in more detail in the next section.
  
  
  ## Evaluation - How to construct validation- & test-set?
  
+ Simply looking at random vectors and interpreting their meaning is not simple and especially not possible to compute, 
+ so different approaches are required.
  The goal is to find a set of words with certain properties, which ensure hopefully that
  each of these words can be generated, because no important information is missing in the model.
  These words should not have a unique meaning, i.e. there
@@ -136,6 +143,7 @@ embedding_model_to_use = 'glove'
 |lstm_2 (LSTM)                |(None, 80, 10)            | 1040   | 
 |dense_1 (Dense)              |(None, 80, 70)            | 770    | 
 |dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
+
 Total params: 9,746
 Trainable params: 9,746
 Non-trainable params: 0
@@ -176,6 +184,7 @@ embedding_model_to_use = 'glove'
 |lstm_3 (LSTM)                |(None, 80, 40)            | 12960  | 
 |dense_1 (Dense)              |(None, 80, 70)            | 2870   | 
 |dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
+
 Total params: 62,606
 Trainable params: 62,606
 Non-trainable params: 0
