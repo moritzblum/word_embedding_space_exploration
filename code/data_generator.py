@@ -41,7 +41,7 @@ class DataGenerator(keras.utils.Sequence):
         chars.append([self.eosTag])
         self.hot_enc_len = len(chars)
         self.enc.fit(chars)
-        self.word_length = 80
+        self.word_length = 10
 
     def on_epoch_end(self):
         """Updates indexes after each epoch. Implements the shuffle functionality."""

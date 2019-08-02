@@ -24,7 +24,7 @@ def get_LSTM_v2(seq_length, input_dim, output_dim):
     model.add((Dense(output_dim, activation='softmax')))
     return model
 
-# Training 2
+# Training 3
 def get_LSTM_v3(seq_length, input_dim, output_dim):
     model = Sequential()
     model.add(RepeatVector(seq_length, input_shape=(input_dim,)))
@@ -32,5 +32,16 @@ def get_LSTM_v3(seq_length, input_dim, output_dim):
     model.add(LSTM(120, return_sequences=True))
     model.add(LSTM(120, return_sequences=True))
     model.add(Dense(200))
+    model.add((Dense(output_dim, activation='softmax')))
+    return model
+
+# Training 4
+def get_LSTM_v4(seq_length, input_dim, output_dim):
+    model = Sequential()
+    model.add(RepeatVector(seq_length, input_shape=(input_dim,)))
+    model.add(LSTM(80, return_sequences=True))  # input_shape=(input_dim, ) not required
+    model.add(LSTM(60, return_sequences=True))
+    model.add(LSTM(80, return_sequences=True))
+    model.add(Dense(100))
     model.add((Dense(output_dim, activation='softmax')))
     return model

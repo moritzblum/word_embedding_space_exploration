@@ -6,13 +6,8 @@ from random import shuffle
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-from keras.utils import plot_model
-from keras.models import Sequential
-from keras.layers import Dense, TimeDistributed, LSTM, RepeatVector
 from keras.utils import multi_gpu_model
 from gensim.models import KeyedVectors
-
 
 from data_generator import DataGenerator
 from networks import *
@@ -23,6 +18,8 @@ ONOMATOPOEIA = 'onomatopoeia'
 
 
 ''' 
+Training of a LTSM network.
+
 Important:
 model.wv.index2word[i] returns the i'th word 
 model.wv[word] returns the corresponding embedding for the word
@@ -35,10 +32,12 @@ MODEL_PATH = '../data/embedding_models/'
 word2vec = 'GoogleNews-vectors-negative300.bin'
 glove = 'glove.6B/glove.6B.50d.word2vec'
 
+# specify which LSTM model to use in line 208
+
 validation = ONOMATOPOEIA # MORPHOLOGICAL_DERIVATIONS  # COMPOUNDS
-train_test_split = 0.2
+train_test_split = 0.3
 batch_size = 100  # max size of the training set
-n_epochs = 5000
+n_epochs = 2000
 cpu_cores = 2
 embedding_model_to_use = 'glove'
 multipe_gpu = False
@@ -208,8 +207,7 @@ oneHotEncoder_test(training_generator)
 # Design the LSTM model architecture
 
 # create LSTM
-model = get_LSTM_v2(seq_length, input_dim, hot_enc_dim) # TODO
-# ToDo Test if now both GPUs are used.
+model = get_LSTM_v4(seq_length, input_dim, hot_enc_dim)
 try:
     if multipe_gpu:
         model = multi_gpu_model(model, gpus=2)
@@ -237,7 +235,9 @@ model.save_weights('../data/network_models/' + model_name + '.h5')
 
 
 # make some example predictions:
-Y = embedding_model.index2word[0:200]
+Y = []
+for index in partition['validation']:
+    Y.append(embedding_model.index2word[index])
 X = embedding_model[Y]
 prediction = model.predict(X)
 words = training_generator.seq_hot_enc_2_word(prediction)
@@ -256,8 +256,8 @@ print(history.history.keys())
 # summarize history for accuracy
 plt.plot(history.history['loss'], label='loss')
 plt.plot(history.history['acc'], label='acc')
-plt.plot(history.history['val_loss'], label='val_loss')
-plt.plot(history.history['val_acc'], label='val_acc')
+#plt.plot(history.history['val_loss'], label='val_loss')
+#plt.plot(history.history['val_acc'], label='val_acc')
 plt.legend()
 plt.title('loss/acc')
 plt.ylabel('loss/acc')

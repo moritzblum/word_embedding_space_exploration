@@ -3,8 +3,10 @@ import json
 from gensim.models import KeyedVectors
 
 """
-Reads in a list of words written linewise in a .txt file, filters out all words which are not contained in the word embedding
-dataset, creates a json and dumps it to file. 
+Reads in a list of onomatopoeia words written linewise in a .txt file, filters out all words which are not contained in 
+the word embedding dataset, creates a json and dumps it to file. 
+
+This script only handles the glove dataset!!!
 """
 
 MODEL_PATH = '../../data/embedding_models/'

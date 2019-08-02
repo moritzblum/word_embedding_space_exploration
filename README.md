@@ -192,13 +192,16 @@ Size of the validation set: 8813
 
 loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
 
+Loss does not decrease => Too much data/complexity.
 
 
 ### Training 4
 Same as in Training 2 but with a Network with more parameters. Now the network has as many parameters as data points in 
-the training set.  get_LSTM_v3 fpr 6000 epochs
+the training set. Network get_LSTM_v3 for 6000 epochs.
 
 loss: 0.2412 - acc: 0.0315 - val_loss: 0.3420 - val_acc: 0.0213
+
+Again: Loss does not decrease => Too much data/complexity.
 
 
 ## Onomatopoeia
@@ -207,5 +210,56 @@ The net cannot be trained sufficiently, so I am now trying to train on a smaller
 words, because they are very simple built up and should do to this be easier to learn. Omatopoeia are words that 
 phonetically imitates, resembles, or suggests the sound that they describe. Some example words are extracted from 
 this [website](https://www.noisehelp.com/examples-of-onomatopoeia.html).
+
+trainig with word length 80:
+1s 504ms/step - loss: 5.2252e-06 - acc: 0.0726 - val_loss: 0.6006 - val_acc: 0.0310
+
+=> complexity way to high and smaller word lengh is sufficient in this case.
+
+trainig with word length 10 and without a validation set:
+
+0s 267ms/step - loss: 4.8331e-04 - acc: 0.5820
+
+label, prediction:
+* ('cluck', 'cluck#####'), 
+* ('hum', 'hum#######'), 
+* ('yap', 'yap#######'), 
+* ('lisp', 'lisp######'), 
+* ('snip', 'snip######'), 
+* ('sputter', 'sputter###'), 
+* ('rattle', 'rattle####'), 
+* ('whomp', 'whomp#####'), 
+* ('bawl', 'bawl######'), 
+* ('trickle', 'trickle###'), 
+* ('rap', 'rap#######'), 
+* ('whoosh', 'whoosh####'), 
+* ('belch', 'belch#####')
+
+very good results. Strange that the acc is not at 1.
+
+Now with a split in training and validation set of 30%:
+
+0s 284ms/step - loss: 3.6720e-04 - acc: 0.5720 - val_loss: 5.0976 - val_acc: 0.2300
+
+Prediction of words of the validation set:
+
+* ('munch', 'cliff#####'), 
+* ('snicker', 'clbbe#####'), 
+* ('pop', 'pop#######'), 
+* ('rap', 'woos######'), 
+* ('jingle', 'muup######'), 
+* ('buzz', 'buzz######'), 
+* ('crash', 'twwwwhh###'), 
+* ('boom', 'brup######'), 
+* ('splatter', 'siiee#####'), 
+* ('squish', 'plac######'), 
+* ('knock', 'siffz#####'), 
+* ('whistle', 'whistle###'), 
+* ('honk', 'beep######'), 
+* ('hum', 'hum#######'), 
+* ('sputter', 'zuunzz####')
+
+Worser acc than without validation. Biased and trained to the validation set, otherwise there is no explanation why the
+network is able to create this words, because the data set must be way to small to detect such a great behaviour.
 
 

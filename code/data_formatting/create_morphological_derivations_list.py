@@ -1,8 +1,8 @@
 import json
-import os
+
 from gensim.models import KeyedVectors
 
-MODEL_PATH = '../data/embedding_models/'
+MODEL_PATH = '../../data/embedding_models/'
 word2vec = 'GoogleNews-vectors-negative300.bin'
 glove = 'glove.6B/glove.6B.50d.word2vec'
 
@@ -45,12 +45,12 @@ def find_words(model):
 filename = MODEL_PATH + glove
 model = KeyedVectors.load_word2vec_format(filename, binary=False)
 word_dict = find_words(model)
-with open('../data/morphological_derivations_glove.json', 'w') as out_file:
+with open('../../data/morphological_derivations_glove.json', 'w') as out_file:
     json.dump(word_dict, out_file)
 
 # word2vec
 filename = MODEL_PATH + word2vec
 model = KeyedVectors.load_word2vec_format(filename, binary=True)
 word_dict = find_words(model)
-with open('../data/morphological_derivations_word2vec.json', 'w') as out_file:
+with open('../../data/morphological_derivations_word2vec.json', 'w') as out_file:
     json.dump(word_dict, out_file)
