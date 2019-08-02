@@ -18,9 +18,8 @@ e.g. understanding NN training results
  
 
 ## Ideas and further plan
+ * How does the network behave (e.g. accuracy) in terms of complexity: number of words, word length, nouns/verbs/adjectives
  * What influence does the selection of the validation set have?
- * How does the network behave (e.g. accuracy) in terms of: word length, nouns/verbs/adjectives
- 
  
  ## Infos
  * Google translator uses ~8 layers per encoding and decoding
@@ -64,7 +63,7 @@ e.g. understanding NN training results
  But compounds are a special case in German, because  German writes compound nouns without spaces, different than e.g. 
  in English.  Due to this fact, there is not much research on this topic for English and no large corpus exists. To create a test 
  set, all words of a [website with collected compounds](https://www.learningdifferences.com/Main%20Page/Topics/Compound%20Word%20Lists/Compound_Word_%20Lists_complete.htm) 
- were extracted. This yields a [list of 848 compounds](/data/compounds_list_all.txt). Most of these words are contained in
+ were extracted. This yields a [list of 848 compounds](/data/compounds_list.txt). Most of these words are contained in
  the trained word embeddings too. 
 
 ### Morphological Derivations
@@ -172,7 +171,7 @@ validation = MORPHOLOGICAL_DERIVATIONS
 train_test_split = 0.5
 batch_size = 4000  
 n_epochs = 4000
-cpu_cores = 8 
+cpu_cores = 4 
 embedding_model_to_use = 'glove'
 """-------Training Configuration-------"""
 
@@ -191,13 +190,22 @@ Non-trainable params: 0
 
 Size of the validation set: 8813
 
+loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
 
-TODO stdout_2948_0 training history
 
-### Training 3
 
-Same configuration and network as in training 2 but with COMPOUNDS for validation. Due to the fact that the compounds 
-set has only a size of 400 and the batch size is 4000, the validation set is extended artificially by repeating the
-set multiple times.
+### Training 4
+Same as in Training 2 but with a Network with more parameters. Now the network has as many parameters as data points in 
+the training set.  get_LSTM_v3 fpr 6000 epochs
+
+loss: 0.2412 - acc: 0.0315 - val_loss: 0.3420 - val_acc: 0.0213
+
+
+## Onomatopoeia
+
+The net cannot be trained sufficiently, so I am now trying to train on a smaller corpus. The idea is to use onomatopoeia
+words, because they are very simple built up and should do to this be easier to learn. Omatopoeia are words that 
+phonetically imitates, resembles, or suggests the sound that they describe. Some example words are extracted from 
+this [website](https://www.noisehelp.com/examples-of-onomatopoeia.html).
 
 

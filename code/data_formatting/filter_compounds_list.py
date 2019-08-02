@@ -1,6 +1,5 @@
 import json
 
-import os
 from gensim.models import KeyedVectors
 
 MODEL_PATH = '../data/embedding_models/'
