@@ -211,12 +211,14 @@ words, because they are very simple built up and should do to this be easier to 
 phonetically imitates, resembles, or suggests the sound that they describe. Some example words are extracted from 
 this [website](https://www.noisehelp.com/examples-of-onomatopoeia.html).
 
-trainig with word length 80:
+The trainings will run on architecture 4 with 134,636 total params.
+
+Training with word length 80:
 1s 504ms/step - loss: 5.2252e-06 - acc: 0.0726 - val_loss: 0.6006 - val_acc: 0.0310
 
 => complexity way to high and smaller word lengh is sufficient in this case.
 
-trainig with word length 10 and without a validation set:
+Training with word length 10 and without a validation set:
 
 0s 267ms/step - loss: 4.8331e-04 - acc: 0.5820
 
