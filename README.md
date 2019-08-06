@@ -5,38 +5,38 @@
 
 ### Motivation and Idea
 
-Word embeddings are a sett of language modeling techniques in natural language processing (NLP) where words or phrases 
-from the vocabulary are mapped to vectors. One methods to generate such a mapping are neural networks which are 
+Word embeddings are a set of language modeling techniques in natural language processing (NLP) where words or phrases 
+from the vocabulary are mapped to vectors. One method to generate such a mapping are through neural networks which are 
 used in [Word2vec](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf).
-The objective is to have words with similar context occupy close spatial positions. They are used in many different NLP tasks and have shown to be a good working 
-word representation. But these mappings are from a discrete word
+The objective is to have words with similar context occupy close spatial positions. Another important fact is, that they
+are reducing the number of dimensions in comparison to one hot encoding of words. They are used in many different NLP tasks and 
+have shown to be a good working word representation and. But these mappings are from a discrete word
 space to another discrete vector space and new fantasy words with an understandable and derivable meaning have no associated vector 
 in the word embedding space, because these were never learned. 
 
 The goal of this project is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
-insights into the space of word embeddings e.g. in therms of word locations and could have multiple applications like
+insights into the space of word embeddings e.g. in terms of word locations and could have multiple applications like
 e.g. understanding NN training results. 
 
 Assuming a function exists that maps continuous vectors into words, it should be 
-possible to learn it with a neural network, since these can approximate any possible function arbitrary close. 
+possible to learn this function with a neural network, since these can approximate any possible function arbitrary close. 
 If you then enter a new vector into the function, the output should be as meaningful as possible. 
-For example, a vector between book and poster could output bookster. And the distance between the two words could be 
-continuously traversed and one should then be able to observe a fluid change in the output word that is related to the position.
-In addition, Word vectors can be added and then verbalized whose combination actually had no verbalized meaning.
+For example, a vector between book and poster could output bookster or any other meaningful mixture of these words. 
+Furthermore, the distance between the two words could be continuously traversed and one should then be able to observe a 
+fluid change in the output word that is related to the position.
+In addition, word vectors can be added and then verbalized whose combination actually had no verbalized meaning.
 
 
 ### Setup
  
 To verbalize word embedding vectors, a function that maps high dimensional vectors to strings is required. Since the 
-words are different in length, a sequence-generation RNN (one-to-many) with LSTM cells is used. 
-In this project the decision was made on LSTM cells, 
-but with the similar GRUs one would expect the same behavior. 
+words are different in length, a sequence-generation RNN (one-to-many) with LSTM cells can be used. 
+In this project the decision was made in LSTM cells, but with the similar GRUs one would expect the same behavior. 
 
 Input to the network are the raw word embedding vectors
-and the output is a sequence of vectors, where each vector is a char in one-hot encoding. After each word is a EOS (end of sequence)
-token. For training the Stanford Glove
-and Google pre trained Word2Vec databases are used, which contain the training data in vector string tuples. 
-During training, a DataGenerator generates a batch in the correct format out of tone of these corpora. Choosing a 
+and the output is a sequence of vectors, where each vector is a char in one-hot encoding. Each word ends with a EOS (end of sequence)
+token. For training the Stanford Glove and Google pre trained Word2Vec databases are used, which contain the training data in (vector, string) tuples. 
+During training, a DataGenerator generates a batch in the correct format out of these corpora. Choosing a 
 validation set is not easy, so this will be discussed in more detail in the next section.
  
  
@@ -110,6 +110,11 @@ think of using advanced word distances for this, but they usually do not fulfill
 The accuracy is measure by comparing the input word with the output sequence until the EOS token. There are other possible 
 word distances that can be used, too. 
 
+If a model with good performance has been obtained, one can consider how to evaluate the verbalization of new word embeddings. 
+But it is not sure whether it is possible to learn such a model, so this question has been postponed.
+
+
+
 ## Training
 
 For training multiple different networks were set up and trained on the CITEC GPU-Cluster.
@@ -149,8 +154,8 @@ RNN model.
 
 ### Training 2 
 
-This time the number of LSTM layers and the number of LSTMs per layer are increased to counter underfitting, the training limit is extended to
-72 hours and the number of epochs is reduced to ensure a correct termination of the training process.
+This time the number of LSTM layers and the number of LSTMs per layer are increased to counter underfitting by increasing the trainable model parameters, 
+the training limit is extended to 72 hours and the number of epochs is reduced to ensure a correct termination of the training process.
 
 Training Configuration:
 * validation = MORPHOLOGICAL_DERIVATIONS 
@@ -201,7 +206,7 @@ Non-trainable params: 0
 
 Training results: loss: 0.2412 - acc: 0.0315 - val_loss: 0.3420 - val_acc: 0.0213
 
-Again, the loss stopped to decrease after some time.
+But again, the loss stopped to decrease after some time.
 
 The assumption is that a much larger model is required, which requires significantly more computing power. But it is not 
 possible to train such models with much more parameters at the moment.
@@ -210,6 +215,8 @@ possible to train such models with much more parameters at the moment.
 ## Learning Process Validation
 
 In order to avoid that the training was error-prone and our results are not correct, the training was performed on a smaller amount of data. 
+If it is possible to learn a small set of words by heart, the network architecture and the learning algorithm are 
+working correct.
 
 ### Onomatopoeia
 
@@ -218,7 +225,6 @@ words, because they are very simple built up and should do to this be easier to 
 phonetically imitates, resembles, or suggests the sound that they describe. Some example words are extracted from 
 this [website](https://www.noisehelp.com/examples-of-onomatopoeia.html).
 
-The trainings will run on architecture 4 with 134,636 total params.
 
 |Layer (type)                 |Output Shape              |Param    
 |-----------------------------|--------------------------|---------|
@@ -235,8 +241,8 @@ Non-trainable params: 0
 
 Training results: 1s 504ms/step - loss: 5.2252e-06 - acc: 0.0726 - val_loss: 0.6006 - val_acc: 0.0310
 
-If you now look at the training, you can see that the loss is very small, but the acc has a much higher value. This indicates, that
-the training was successful, but the acc measure is more sensitive against errors in the output. It's not exactly clear why this is the case.
+If you now look at the training results, you can see that the loss is very small, but the acc has a much higher value. This indicates, that
+the training was successful, but the accuracy measure is more sensitive against errors in the output. It's not exactly clear why this is the case.
 Maybe the error adds up across in the word length. All previous trainings were conducted with a word length of 80 characters, 
 as there were also very long words in the training data set, but for this training, all words have less than 10 characters.
 => Complexity way to high and smaller word length is sufficient in this case.
@@ -262,7 +268,7 @@ label, prediction:
 * ('whoosh', 'whoosh####'), 
 * ('belch', 'belch#####')
 
-This are in fact very good results. Again its strange that the acc is not at 1.
+This are in fact very good results. Again it is strange that the accuracy is not at 1.
 
 Now one can check, how the training behave in case of a random validation set, as indicated in the section Evaluation.
 
@@ -288,22 +294,19 @@ Prediction of words of the validation set:
 * ('hum', 'hum#######'), 
 * ('sputter', 'zuunzz####')
 
-This is a worser acc than without validation. Biased and trained to the validation set, otherwise there is no explanation why the
-network is able to create this words, because the data set must be way to small to detect such a great behaviour. That the verbalization
-as indicated in the motivation does not work is obvious at this worse performance.
+This is a worser training accuracy than without validation. But the model must be biased and trained to the validation set, 
+otherwise there is no explanation why the network is able to create this words, because the data set must be way to small 
+to detect such a great behaviour. That the verbalization as indicated in the motivation does not work is obvious at this worse performance.
 
 ## Results
 
-It could not be shown if it is possible to verbalize unknown Word Embeddings. The problem was that the training loss 
+It could not be shown if it is possible to verbalize unknown word embeddings. The problem was that the training loss 
 stopped to decrease and an increase in the number of model parameters has helped little to reduce this value even further. 
 With many more model parameters you might get good results, but these models are currently not trainable because of hardware 
 and there would probably be new problems regarding the model size.
 
 In order to exclude a mistake on my part, a network with a small amount of data was overfitted. 
 This shows that the training was technically correct.
-
-In order to further investigate the facts, one could, for example, directly start with the model for the word embeddings 
-and change the input from the CBOW model and look how the output changes.
 
 
 ## Important links 
