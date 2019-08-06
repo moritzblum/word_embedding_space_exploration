@@ -3,76 +3,79 @@
 
 ## Project Description
 
-The goal is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
+### Motivation and Idea
+
+Word embeddings are a sett of language modeling techniques in natural language processing (NLP) where words or phrases 
+from the vocabulary are mapped to vectors. One methods to generate such a mapping are neural networks which are 
+used in [Word2vec](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf).
+The objective is to have words with similar context occupy close spatial positions. They are used in many different NLP tasks and have shown to be a good working 
+word representation. But these mappings are from a discrete word
+space to another discrete vector space and new fantasy words with an understandable and derivable meaning have no associated vector 
+in the word embedding space, because these were never learned. 
+
+The goal of this project is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
 insights into the space of word embeddings e.g. in therms of word locations and could have multiple applications like
-e.g. understanding NN training results
+e.g. understanding NN training results. 
 
-## References 
- * Main idea: [Learn to Add Numbers with an Encoder-Decoder LSTM Recurrent Neural Network](https://machinelearningmastery.com/learn-add-numbers-seq2seq-recurrent-neural-networks/)
- * [different LSTM types in Keras](https://stackoverflow.com/questions/43034960/many-to-one-and-many-to-many-lstm-examples-in-keras)
- * [Keras data generator Example](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
- * [Word2vec Keras Tutorial](https://www.tensorflow.org/tutorials/representation/word2vec)
- * Word2vec Paper: Distributed Representations of Words and Phrases and their Compositionality
- * Google translator seq2seq paper: Google’s Neural Machine Translation System: Bridging the Gap between Human and 
- Machine Translation
- 
+Assuming a function exists that maps continuous vectors into words, it should be 
+possible to learn it with a neural network, since these can approximate any possible function arbitrary close. 
+If you then enter a new vector into the function, the output should be as meaningful as possible. 
+For example, a vector between book and poster could output bookster. And the distance between the two words could be 
+continuously traversed and one should then be able to observe a fluid change in the output word that is related to the position.
+In addition, Word vectors can be added and then verbalized whose combination actually had no verbalized meaning.
 
-## Ideas and further plan
- * How does the network behave (e.g. accuracy) in terms of complexity: number of words, word length, nouns/verbs/adjectives
- * What influence does the selection of the validation set have?
- 
- ## Infos
- * Google translator uses ~8 layers per encoding and decoding
- * Pytorch TRANSLATION WITH A SEQUENCE TO SEQUENCE NETWORK AND ATTENTION example used one layer each with 256 units
- * "2 layers are nice, 5 layers are better and 7 layers are very hard to train"
- 
- 
- ## Setup
- 
- To verbalize word embedding vectors, a function that maps high dimensional vectors to strings is required. Therefore a 
- sequence-generation RNN (one-to-many) with LSTM cells is used. Input to the network are the raw word embedding vectors
- and the output is a sequence of vectors, where each vector is a char in one-hot encoding. For training the Stanford Glove
- and Google pre trained Word2Vec databases are used, which contain the training data in vector string tuples. 
- During training, a DataGenerator generates a batch in the correct format out of tone of these corpora. Choosing a 
- validation set is not easy, so this will be discussed in more detail in the next section.
- 
- 
- ## Evaluation - How to construct validation- & test-set?
- 
- Simply looking at random vectors and interpreting their meaning is not simple and especially not possible to compute, 
- so different approaches are required.
- The goal is to find a set of words with certain properties, which ensure hopefully that
- each of these words can be generated, because no important information is missing in the model.
- These words should not have a unique meaning, i.e. there
- are existing other words or combinations of other words with the same meaning , and should be constructable out of 
- other words, e.g. "comeback" can be constructed out of "come" and "back". 
- 
- ### Random
- 
- Simply selecting random words of the dataset as test-set does not fulfill these properties. The assumption is that the
- RNN will not be able to reconstruct these words correctly out of the embeddings, because without the fulfilled 
- properties, no information about most of these words is contained in the trained model.
- 
- ### Compounds
- 
- The idea was to design a test set based on compounds (e.g., Computerlinguistik 'computational linguistics'). Assuming 
- that a not minor subset exists, where not only the string is constructed out of other strings, but as well the meaning 
- is represented by the other words, no information is missing in the corpus and the trained system should be able to 
- reconstruct these words. 
 
- But compounds are a special case in German, because  German writes compound nouns without spaces, different than e.g. 
- in English.  Due to this fact, there is not much research on this topic for English and no large corpus exists. To create a test 
- set, all words of a [website with collected compounds](https://www.learningdifferences.com/Main%20Page/Topics/Compound%20Word%20Lists/Compound_Word_%20Lists_complete.htm) 
- were extracted. This yields a [list of 848 compounds](/data/compounds_list.txt). Most of these words are contained in
- the trained word embeddings too. 
+### Setup
+ 
+To verbalize word embedding vectors, a function that maps high dimensional vectors to strings is required. Since the 
+words are different in length, a sequence-generation RNN (one-to-many) with LSTM cells is used. 
+In this project the decision was made on LSTM cells, 
+but with the similar GRUs one would expect the same behavior. 
+
+Input to the network are the raw word embedding vectors
+and the output is a sequence of vectors, where each vector is a char in one-hot encoding. After each word is a EOS (end of sequence)
+token. For training the Stanford Glove
+and Google pre trained Word2Vec databases are used, which contain the training data in vector string tuples. 
+During training, a DataGenerator generates a batch in the correct format out of tone of these corpora. Choosing a 
+validation set is not easy, so this will be discussed in more detail in the next section.
+ 
+ 
+## Evaluation - How to construct validation- & test-set?
+ 
+Simply looking at random vectors and interpreting their meaning is not simple and especially not possible to compute, 
+so different approaches are required.
+The goal is to find a set of words with certain properties, which ensure hopefully that
+each of these words can be generated, because no important information is missing in the model.
+These words should not have a unique meaning, i.e. there
+are existing other words or combinations of other words with the same meaning, and should be constructable out of 
+other words, e.g. "comeback" can be constructed out of "come" and "back". 
+ 
+### Random
+ 
+Simply selecting random words of the dataset as test-set does not fulfill these properties. The assumption is that the
+RNN will not be able to reconstruct these words correctly out of the embeddings, because without the fulfilled 
+properties, no information about most of these words is contained in the trained model.
+ 
+### Compounds
+ 
+The idea was to design a test set based on compounds (e.g., Computerlinguistik 'computational linguistics'). Assuming 
+that a not minor subset exists, where not only the string is constructed out of other strings, but as well the meaning 
+is represented by the other words, no information is missing in the corpus and the trained system should be able to 
+reconstruct these words. 
+
+But compounds are a special case in German, because  German writes compound nouns without spaces, different than e.g. 
+in English.  Due to this fact, there is not much research on this topic for English and no large corpus exists. To create a test 
+set, all words of a [website with collected compounds](https://www.learningdifferences.com/Main%20Page/Topics/Compound%20Word%20Lists/Compound_Word_%20Lists_complete.htm) 
+were extracted. This yields a [list of 848 compounds](/data/compounds_list.txt). Most of these words are contained in
+the trained word embeddings too. 
 
 ### Morphological Derivations
 
- [Morphological derivation Wikipedia](https://en.wikipedia.org/wiki/Morphological_derivation):
+[Morphological derivation Wikipedia](https://en.wikipedia.org/wiki/Morphological_derivation):
  
- "Derivational morphology often involves the addition of a derivational suffix or other affix."
+"Derivational morphology often involves the addition of a derivational suffix or other affix."
  
- Here are examples of English derivational patterns and their suffixes:
+Here are examples of English derivational patterns and their suffixes:
 
  * adjective-to-noun: -ness (slow → slowness)
  * adjective-to-verb: -ise (modern → modernise) in British English or -ize (final → finalize) in American English and 
@@ -85,8 +88,8 @@ e.g. understanding NN training results
  * verb-to-noun (abstract): -ance (deliver → deliverance)
  * verb-to-noun (agent): -er (write → writer)
  
- However, derivational affixes do not necessarily alter the lexical category; they may change merely the meaning of the
- base and leave the category unchanged. 
+However, derivational affixes do not necessarily alter the lexical category; they may change merely the meaning of the
+base and leave the category unchanged. 
  
  * A prefix (write → re-write; lord → over-lord) rarely changes the lexical category in English.
  * The prefix un- applies to adjectives (healthy → unhealthy) and some verbs (do → undo) but rarely to nouns.
@@ -95,45 +98,33 @@ e.g. understanding NN training results
  circle (verb) → encircle (verb) but rich (adj) → enrich (verb), large (adj) → enlarge (verb), 
  rapture (noun) → enrapture (verb), slave (noun) → enslave (verb).
 
- Excluding some words which follow morphological derivations, would yield a test set that can be reconstructed, because
- the RNN can learn the semantic of the derivation rules.
-
-### Multi-words
-
- Multi-words are very similar to Compounds, but the semantically couples words are separated by a whitespace. 
- Using Milti-words as test-set would require first to train word embeddings, with Multi-words as one word/vector. 
- After that, the idea is the same to the idea with Compounds.
- 
- To train the word embeddings, a Multi-word tokenized text is required. NLTK provides a module 
- [nltk.tokenize.mwe module](http://www.nltk.org/api/nltk.tokenize.html?highlight=regexp%20tokenize#nltk.tokenize.regexp.RegexpTokenizer) 
- for that. The training can be done with [Gensim](https://radimrehurek.com/gensim/models/word2vec.html) to obtain a 
- Word2Vec model. (Glove embeddings can not be trained with Gensim.)
- 
- https://datascience.stackexchange.com/questions/17294/nlp-what-are-some-popular-packages-for-multi-word-tokenization
+Excluding some words which follow morphological derivations, would yield a test set that can be reconstructed, because
+the RNN can learn the semantic of the derivation rules.
 
 
+### Loss and Accuracy
 
-https://stackoverflow.com/questions/5532363/python-tokenizing-with-phrases
+The loss function of the neural network is directly calculated on the vectors. One could 
+think of using advanced word distances for this, but they usually do not fulfill the requirements of a loss function for NNs. 
 
-### Redundant words in English
-
-Vocabularies that are not necessary in the english language, because e.g. there is another more frequently used word 
-with the same meaing 
+The accuracy is measure by comparing the input word with the output sequence until the EOS token. There are other possible 
+word distances that can be used, too. 
 
 ## Training
 
-Training is done on the CITEC GPU-Cluster.
+For training multiple different networks were set up and trained on the CITEC GPU-Cluster.
 
 ### Training 1
 
-"""-------Training Configuration-------"""
-validation = MORPHOLOGICAL_DERIVATIONS 
-train_test_split = 0.5
-batch_size = 4000  
-n_epochs = 5000
-cpu_cores = 12 
-embedding_model_to_use = 'glove'
-"""-------Training Configuration-------"""
+Training Configuration:
+* validation = MORPHOLOGICAL_DERIVATIONS 
+* train_test_split = 0.5 => Size of the validation set: 8813
+* batch_size = 4000  
+* n_epochs = 5000
+* cpu_cores = 12 
+* embedding_model_to_use = 'glove'
+
+Network architecture: 
 
 |Layer (type)                 |Output Shape              |Param    
 |-----------------------------|--------------------------|--------|
@@ -143,37 +134,31 @@ embedding_model_to_use = 'glove'
 |dense_1 (Dense)              |(None, 80, 70)            | 770    | 
 |dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
 
-Total params: 9,746
-Trainable params: 9,746
-Non-trainable params: 0
+![Network Architecture](/data/network_models/architecture1.png test)
 
-Size of the validation set: 8813
+* Total params: 9,746
+* Trainable params: 9,746
+* Non-trainable params: 0
 
-Training results:
-* after 1000 epochs: loss: 0.2852 - acc: 0.0213 - val_loss: 0.3068 - val_acc: 0.0205
-* after 2000 epochs: loss: 0.2849 - acc: 0.0213 - val_loss: 0.3073 - val_acc: 0.0205
-* after 3000 epochs: loss: 0.2847 - acc: 0.0214 - val_loss: 0.3063 - val_acc: 0.0204
-* after 4000 epochs: loss: 0.2846 - acc: 0.0214 - val_loss: 0.3055 - val_acc: 0.0204
-*after 4502 epochs: loss: 0.2848 - acc: 0.0214 - val_loss: 0.3068 - val_acc: 0.0203
+Training results: loss: 0.2848 - acc: 0.0214 - val_loss: 0.3068 - val_acc: 0.0203
 
 GPU cluster didn't finish training, due to time limit of 48h training. But the results are enough to make first 
-reasoning. After 3000 epochs no improvement on training and validation loss. This is an indicator for a underfitting 
+reasoning. After 3000 epochs there were no improvement on training and validation loss. This is an indicator for a underfitting 
 RNN model. 
 
 
 ### Training 2 
 
-This time the number of LSTM layers and the number of LSTMs per layer are increased, the training limit is extended to
-72 hours, and the number of epochs is reduced.
+This time the number of LSTM layers and the number of LSTMs per layer are increased to counter underfitting, the training limit is extended to
+72 hours and the number of epochs is reduced to ensure a correct termination of the training process.
 
-"""-------Training Configuration-------"""
-validation = MORPHOLOGICAL_DERIVATIONS 
-train_test_split = 0.5
-batch_size = 4000  
-n_epochs = 4000
-cpu_cores = 4 
-embedding_model_to_use = 'glove'
-"""-------Training Configuration-------"""
+Training Configuration:
+* validation = MORPHOLOGICAL_DERIVATIONS 
+* train_test_split = 0.5 => Size of the validation set: 8813
+* batch_size = 4000  
+* n_epochs = 4000
+* cpu_cores = 4 
+* embedding_model_to_use = 'glove'
 
 |Layer (type)                 |Output Shape              |Param    
 |-----------------------------|--------------------------|--------|
@@ -188,9 +173,11 @@ Total params: 62,606
 Trainable params: 62,606
 Non-trainable params: 0
 
-Size of the validation set: 8813
 
-loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
+
+Training results: loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
+
+![results](/data/learning_curves/training_results2.png test)
 
 Loss does not decrease => Too much data/complexity.
 
@@ -263,5 +250,10 @@ Prediction of words of the validation set:
 
 Worser acc than without validation. Biased and trained to the validation set, otherwise there is no explanation why the
 network is able to create this words, because the data set must be way to small to detect such a great behaviour.
+
+
+## Important links 
+ * [Keras data generator Example](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
+ * [Word2vec Keras Tutorial](https://www.tensorflow.org/tutorials/representation/word2vec)
 
 
