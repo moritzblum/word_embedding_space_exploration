@@ -8,15 +8,15 @@
 Word embeddings are a set of language modeling techniques in natural language processing (NLP) where words or phrases 
 from the vocabulary are mapped to vectors. One method to generate such a mapping are through neural networks which are 
 used in [Word2vec](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf).
-The objective is to have words with similar context occupy close spatial positions. Another important fact is, that they
-are reducing the number of dimensions in comparison to one hot encoding of words. They are used in many different NLP tasks and 
-have shown to be a good working word representation and. But these mappings are from a discrete word
+The objective is that words with a similar context lie close together in space. Another important fact is, that they
+are reducing the number of dimensions in comparison to one hot encoding of words. Because of these great properties, they are used in many different NLP tasks and 
+have shown to be a good working word representation. But these mappings are from a discrete word
 space to another discrete vector space and new fantasy words with an understandable and derivable meaning have no associated vector 
-in the word embedding space, because these were never learned. 
+in the word embedding space, because these were never learned. The other way around, from word embeddings to fantasy words the same.
 
 The goal of this project is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
 insights into the space of word embeddings e.g. in terms of word locations and could have multiple applications like
-e.g. understanding NN training results. 
+e.g. the understanding NN training results. 
 
 Assuming a function exists that maps continuous vectors into words, it should be 
 possible to learn this function with a neural network, since these can approximate any possible function arbitrary close. 
@@ -52,7 +52,7 @@ other words, e.g. "comeback" can be constructed out of "come" and "back".
  
 ### Random
  
-Simply selecting random words of the dataset as test-set does not fulfill these properties. The assumption is that the
+Simply selecting random words of the dataset as validation-set does not fulfill these properties. The assumption is that the
 RNN will not be able to reconstruct these words correctly out of the embeddings, because without the fulfilled 
 properties, no information about most of these words is contained in the trained model.
  
@@ -98,7 +98,7 @@ base and leave the category unchanged.
  circle (verb) → encircle (verb) but rich (adj) → enrich (verb), large (adj) → enlarge (verb), 
  rapture (noun) → enrapture (verb), slave (noun) → enslave (verb).
 
-Excluding some words which follow morphological derivations, would yield a test set that can be reconstructed, because
+Excluding some words which follow morphological derivations, would yield a validation set that can be reconstructed, because
 the RNN can learn the semantic of the derivation rules.
 
 
@@ -106,6 +106,7 @@ the RNN can learn the semantic of the derivation rules.
 
 The loss function of the neural network is directly calculated on the vectors. One could 
 think of using advanced word distances for this, but they usually do not fulfill the requirements of a loss function for NNs. 
+For all trainings, the categorical crossentropy loss is used, because this is the standard classification tasks.
 
 The accuracy is measure by comparing the input word with the output sequence until the EOS token. There are other possible 
 word distances that can be used, too. 
@@ -268,10 +269,10 @@ label, prediction:
 * ('whoosh', 'whoosh####'), 
 * ('belch', 'belch#####')
 
-This are in fact very good results. Again it is strange that the accuracy is not at 1.
+This are in fact very good results. The network seems to be able to recunstruct each word out of its word embedding.
+Again it is strange that the accuracy is not at 1, because the results seem quite perfect.
 
 Now one can check, how the training behave in case of a random validation set, as indicated in the section Evaluation.
-
 Therefore a training was set up with a split in training and validation set of 70% against 30%:
 
 Training results: 0s 284ms/step - loss: 3.6720e-04 - acc: 0.5720 - val_loss: 5.0976 - val_acc: 0.2300
@@ -294,16 +295,17 @@ Prediction of words of the validation set:
 * ('hum', 'hum#######'), 
 * ('sputter', 'zuunzz####')
 
-This is a worser training accuracy than without validation. But the model must be biased and trained to the validation set, 
+This results in a worser training accuracy than without validation. But the model must be biased and trained to the validation set, 
 otherwise there is no explanation why the network is able to create this words, because the data set must be way to small 
 to detect such a great behaviour. That the verbalization as indicated in the motivation does not work is obvious at this worse performance.
 
 ## Results
 
-It could not be shown if it is possible to verbalize unknown word embeddings. The problem was that the training loss 
+It could not be shown if it is possible to verbalize unknown word embeddings in a meaningful way. The problem was that the training loss 
 stopped to decrease and an increase in the number of model parameters has helped little to reduce this value even further. 
 With many more model parameters you might get good results, but these models are currently not trainable because of hardware 
-and there would probably be new problems regarding the model size.
+and there would probably be new problems regarding the model size. Unfortunately, it was not possible to investigate the 
+effect of the different validation sets, as successful training would have been necessary.
 
 In order to exclude a mistake on my part, a network with a small amount of data was overfitted. 
 This shows that the training was technically correct.
