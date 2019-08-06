@@ -173,41 +173,79 @@ Total params: 62,606
 Trainable params: 62,606
 Non-trainable params: 0
 
-
-
 Training results: loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
 
 ![results](/data/learning_curves/training_results2.png test)
 
-Loss does not decrease => Too much data/complexity.
+Again, the loss did not decrease further, which is an indicator for too much data training data and/or a too high complexity
+of the learning problem.
 
 
 ### Training 4
-Same as in Training 2 but with a Network with more parameters. Now the network has as many parameters as data points in 
-the training set. Network get_LSTM_v3 for 6000 epochs.
+To work against this underfitting, the number of model parameters was increased a second time. Now the network has as many parameters as data points in 
+the training set. 
 
-loss: 0.2412 - acc: 0.0315 - val_loss: 0.3420 - val_acc: 0.0213
+|Layer (type)                 |Output Shape              |Param    
+|-----------------------------|--------------------------|---------|
+|repeat_vector_1 (RepeatVecto |(None, 80, 50)            | 0       | 
+|lstm_1 (LSTM)                |(None, 80, 180)           | 166320  | 
+|lstm_2 (LSTM)                |(None, 80, 120)           | 144480  | 
+|lstm_3 (LSTM)                |(None, 80, 120)           | 115680  | 
+|dense_1 (Dense)              |(None, 80, 200)           | 24200   | 
+|dense_2 (Dense)              |(None, 80, 56)            | 11256   | 
 
-Again: Loss does not decrease => Too much data/complexity.
+Total params: 461,936
+Trainable params: 461,936
+Non-trainable params: 0
 
 
-## Onomatopoeia
+Training results: loss: 0.2412 - acc: 0.0315 - val_loss: 0.3420 - val_acc: 0.0213
 
-The net cannot be trained sufficiently, so I am now trying to train on a smaller corpus. The idea is to use onomatopoeia
+Again, the loss stopped to decrease after some time.
+
+The assumption is that a much larger model is required, which requires significantly more computing power. But it is not 
+possible to train such models with much more parameters at the moment.
+
+
+## Learning Process Validation
+
+In order to avoid that the training was error-prone and our results are not correct, the training was performed on a smaller amount of data. 
+
+### Onomatopoeia
+
+The idea is to use onomatopoeia
 words, because they are very simple built up and should do to this be easier to learn. Omatopoeia are words that 
 phonetically imitates, resembles, or suggests the sound that they describe. Some example words are extracted from 
 this [website](https://www.noisehelp.com/examples-of-onomatopoeia.html).
 
 The trainings will run on architecture 4 with 134,636 total params.
 
-Training with word length 80:
-1s 504ms/step - loss: 5.2252e-06 - acc: 0.0726 - val_loss: 0.6006 - val_acc: 0.0310
+|Layer (type)                 |Output Shape              |Param    
+|-----------------------------|--------------------------|---------|
+|repeat_vector_1 (RepeatVecto |(None, 80, 50)            | 0       | 
+|lstm_1 (LSTM)                |(None, 80, 80)           | 41920  | 
+|lstm_2 (LSTM)                |(None, 80, 60)           | 33840  | 
+|lstm_3 (LSTM)                |(None, 80, 80)           | 45120  | 
+|dense_1 (Dense)              |(None, 80, 100)           | 8100   | 
+|dense_2 (Dense)              |(None, 80, 56)            | 5656   | 
 
-=> complexity way to high and smaller word lengh is sufficient in this case.
+Total params: 134,636
+Trainable params: 134,636
+Non-trainable params: 0
+
+Training results: 1s 504ms/step - loss: 5.2252e-06 - acc: 0.0726 - val_loss: 0.6006 - val_acc: 0.0310
+
+If you now look at the training, you can see that the loss is very small, but the acc has a much higher value. This indicates, that
+the training was successful, but the acc measure is more sensitive against errors in the output. It's not exactly clear why this is the case.
+Maybe the error adds up across in the word length. All previous trainings were conducted with a word length of 80 characters, 
+as there were also very long words in the training data set, but for this training, all words have less than 10 characters.
+=> Complexity way to high and smaller word length is sufficient in this case.
 
 Training with word length 10 and without a validation set:
 
-0s 267ms/step - loss: 4.8331e-04 - acc: 0.5820
+Training results for words with word length of 10:0s 267ms/step - loss: 4.8331e-04 - acc: 0.5820
+
+To verify that the results are really good, you can look at the prediction for random data from the training data set.
 
 label, prediction:
 * ('cluck', 'cluck#####'), 
@@ -224,11 +262,13 @@ label, prediction:
 * ('whoosh', 'whoosh####'), 
 * ('belch', 'belch#####')
 
-very good results. Strange that the acc is not at 1.
+This are in fact very good results. Again its strange that the acc is not at 1.
 
-Now with a split in training and validation set of 30%:
+Now one can check, how the training behave in case of a random validation set, as indicated in the section Evaluation.
 
-0s 284ms/step - loss: 3.6720e-04 - acc: 0.5720 - val_loss: 5.0976 - val_acc: 0.2300
+Therefore a training was set up with a split in training and validation set of 70% against 30%:
+
+Training results: 0s 284ms/step - loss: 3.6720e-04 - acc: 0.5720 - val_loss: 5.0976 - val_acc: 0.2300
 
 Prediction of words of the validation set:
 
@@ -248,8 +288,22 @@ Prediction of words of the validation set:
 * ('hum', 'hum#######'), 
 * ('sputter', 'zuunzz####')
 
-Worser acc than without validation. Biased and trained to the validation set, otherwise there is no explanation why the
-network is able to create this words, because the data set must be way to small to detect such a great behaviour.
+This is a worser acc than without validation. Biased and trained to the validation set, otherwise there is no explanation why the
+network is able to create this words, because the data set must be way to small to detect such a great behaviour. That the verbalization
+as indicated in the motivation does not work is obvious at this worse performance.
+
+## Results
+
+It could not be shown if it is possible to verbalize unknown Word Embeddings. The problem was that the training loss 
+stopped to decrease and an increase in the number of model parameters has helped little to reduce this value even further. 
+With many more model parameters you might get good results, but these models are currently not trainable because of hardware 
+and there would probably be new problems regarding the model size.
+
+In order to exclude a mistake on my part, a network with a small amount of data was overfitted. 
+This shows that the training was technically correct.
+
+In order to further investigate the facts, one could, for example, directly start with the model for the word embeddings 
+and change the input from the CBOW model and look how the output changes.
 
 
 ## Important links 
