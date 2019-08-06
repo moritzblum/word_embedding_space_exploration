@@ -134,7 +134,7 @@ Network architecture:
 |dense_1 (Dense)              |(None, 80, 70)            | 770    | 
 |dense_2 (Dense)              |(None, 80, 56)            | 3976   | 
 
-![Network Architecture](/data/network_models/architecture1.png test)
+![Network Architecture](https://github.com/moritzblum/word_embedding_space_exploration/blob/master/img/architecture1.png)
 
 * Total params: 9,746
 * Trainable params: 9,746
@@ -175,7 +175,7 @@ Non-trainable params: 0
 
 Training results: loss: 0.2696 - acc: 0.0245 - val_loss: 0.3032 - val_acc: 0.0214
 
-![results](/data/learning_curves/training_results2.png test)
+![results](https://github.com/moritzblum/word_embedding_space_exploration/blob/master/img/training_results2.png)
 
 Again, the loss did not decrease further, which is an indicator for too much data training data and/or a too high complexity
 of the learning problem.
