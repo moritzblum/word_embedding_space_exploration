@@ -1,4 +1,4 @@
-# Word Embedding Space Exploration with LSTMs
+# Recurrent Neural Network in NLP - Word Embedding Space Exploration with LSTMs
 
 
 ## Project Description
