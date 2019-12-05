@@ -3,6 +3,10 @@
 
 ## Project Description
 
+The project was done by me and supervised by Basil Ell in the 2nd semester of my study program
+Intelligent Systems (M.Sc.) at the Bielefeld University. 
+
+
 ### Motivation and Idea
 
 Word embeddings are a set of language modeling techniques in natural language processing (NLP) where words or phrases 
@@ -12,11 +16,11 @@ The objective is that words with a similar context lie close together in space. 
 are reducing the number of dimensions in comparison to one hot encoding of words. Because of these great properties, they are used in many different NLP tasks and 
 have shown to be a good working word representation. But these mappings are from a discrete word
 space to another discrete vector space and new fantasy words with an understandable and derivable meaning have no associated vector 
-in the word embedding space, because these were never learned. The other way around, from word embeddings to fantasy words the same.
+in the word embedding space, because these were never learned. It is the same problem, if one wants to map from word embeddings to fantasy words, which were never learned.
 
 The goal of this project is to verbalize points in the word embedding space, which were not trained. Doing this will give us deeper 
 insights into the space of word embeddings e.g. in terms of word locations and could have multiple applications like
-e.g. the understanding NN training results. 
+e.g. the understanding of NN training results. 
 
 Assuming a function exists that maps continuous vectors into words, it should be 
 possible to learn this function with a neural network, since these can approximate any possible function arbitrary close. 
@@ -24,14 +28,13 @@ If you then enter a new vector into the function, the output should be as meanin
 For example, a vector between book and poster could output bookster or any other meaningful mixture of these words. 
 Furthermore, the distance between the two words could be continuously traversed and one should then be able to observe a 
 fluid change in the output word that is related to the position.
-In addition, word vectors can be added and then verbalized whose combination actually had no verbalized meaning.
 
 
 ### Setup
  
 To verbalize word embedding vectors, a function that maps high dimensional vectors to strings is required. Since the 
 words are different in length, a sequence-generation RNN (one-to-many) with LSTM cells can be used. 
-In this project the decision was made in LSTM cells, but with the similar GRUs one would expect the same behavior. 
+In this project LSTM cells are used, but with the similar GRUs one would expect the same behavior. 
 
 Input to the network are the raw word embedding vectors
 and the output is a sequence of vectors, where each vector is a char in one-hot encoding. Each word ends with a EOS (end of sequence)
@@ -58,7 +61,7 @@ properties, no information about most of these words is contained in the trained
  
 ### Compounds
  
-The idea was to design a test set based on compounds (e.g., Computerlinguistik 'computational linguistics'). Assuming 
+The idea was to design a test set based on compounds (e.g.computational linguistics). Assuming 
 that a not minor subset exists, where not only the string is constructed out of other strings, but as well the meaning 
 is represented by the other words, no information is missing in the corpus and the trained system should be able to 
 reconstruct these words. 
@@ -216,7 +219,7 @@ possible to train such models with much more parameters at the moment.
 ## Learning Process Validation
 
 In order to avoid that the training was error-prone and our results are not correct, the training was performed on a smaller amount of data. 
-If it is possible to learn a small set of words by heart, the network architecture and the learning algorithm are 
+If it is possible to rephrase a small set of words, e.g.by memorizing them through learning by heart, the network architecture and the learning algorithm are 
 working correct.
 
 ### Onomatopoeia
@@ -314,5 +317,6 @@ This shows that the training was technically correct.
 ## Important links 
  * [Keras data generator Example](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
  * [Word2vec Keras Tutorial](https://www.tensorflow.org/tutorials/representation/word2vec)
+
 
 
